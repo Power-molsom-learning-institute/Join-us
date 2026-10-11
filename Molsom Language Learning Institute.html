@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Molsom Language Learning Institute - PWA</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind Config for Inter font & custom colors -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            900: '#14532d'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Custom scrollbar for mobile feel */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        /* Mobile frame container styling if viewed on desktop */
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background-color: #f8fafc;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        @media (min-width: 768px) {
+            body {
+                background-color: #e2e8f0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 20px 0;
+            }
+            .app-container {
+                border-radius: 2.5rem;
+                overflow: hidden;
+                height: 90vh;
+                max-height: 850px;
+                border: 8px solid #334155;
+            }
+        }
+    </style>
+</head>
+<body class="h-full bg-slate-100 font-sans text-slate-800 antialiased selection:bg-brand-500 selection:text-white">
+
+    <div id="app" class="app-container">
+        
+        <!-- Top Header Bar -->
+        <header class="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-30">
+            <div class="flex items-center space-x-2">
+                <div class="w-9 h-9 rounded-xl bg-brand-600 flex items-center justify-center text-white font-bold shadow-md shadow-brand-500/20">
+                    <i data-lucide="book-open" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-slate-900 text-sm leading-tight">Molsom Institute</h1>
+                    <p class="text-[10px] text-slate-500 font-medium">Learn Molsom Language (Kha)</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+                <!-- Role switcher or Download Code button -->
+                <button onclick="openDownloadModal()" class="p-2 text-slate-600 hover:text-brand-600 hover:bg-slate-100 rounded-lg transition" title="Download Source Code">
+                    <i data-lucide="download" class="w-5 h-5"></i>
+                </button>
+                <div id="auth-indicator" class="text-xs px-2.5 py-1 rounded-full font-medium bg-slate-100 text-slate-700 flex items-center space-x-1">
+                    <span id="user-role-badge">Guest</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dynamic Viewport -->
+        <main id="main-content" class="flex-1 overflow-y-auto pb-20">
+            <!-- Content injected dynamically by JS router -->
+        </main>
+
+        <!-- Bottom Navigation Bar (Mobile App Style) -->
+        <nav id="bottom-nav" class="bg-white border-t border-slate-200 px-2 py-2 flex items-center justify-around absolute bottom-0 left-0 right-0 z-30 shadow-lg">
+            <!-- Nav buttons populated dynamically based on auth state -->
+        </nav>
+
+        <!-- Global Modal Container -->
+        <div id="modal-container" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+            <div id="modal-content" class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl transform transition-all">
+                <!-- Modal dynamic body -->
+            </div>
+        </div>
+
+        <!-- Toast Notification Container -->
+        <div id="toast-container" class="fixed top-16 right-4 left-4 z-50 flex flex-col space-y-2 pointer-events-none max-w-md mx-auto"></div>
+
+    </div>
+
+    <script>
+        // --- State Management & Initial Seed Data ---
+        const DEFAULT_COURSES = [
+            {
+                id: 'c1',
+                title: 'Molsom Alphabet & Basic Phonetics',
+                level: 'Beginner',
+                description: 'Learn fundamental sounds, vowel symbols, and basic consonants of the Molsom language.',
+                duration: '4 Weeks',
+                lessons: [
+                    { id: 'l1', title: 'Introduction to Molsom Vowels', duration: '15 min', completed: false },
+                    { id: 'l2', title: 'Basic Consonants & Tones', duration: '20 min', completed: false },
+                    { id: 'l3', title: 'Simple Greetings and Farewells', duration: '25 min', completed: false }
+                ]
+            },
+            {
+                id: 'c2',
+                title: 'Everyday Conversation & Phrases',
+                level: 'Intermediate',
+                description: 'Master everyday dialogues for market visits, family interactions, and polite inquiries.',
+                duration: '6 Weeks',
+                lessons: [
+                    { id: 'l4', title: 'At the Marketplace & Bargaining', duration: '30 min', completed: false },
+                    { id: 'l5', title: 'Family Members & Relationships', duration: '20 min', completed: false },
+                    { id: 'l6', title: 'Asking Directions & Time', duration: '25 min', completed: false }
+                ]
+            },
+            {
+                id: 'c3',
+                title: 'Molsom Cultural Folkloric Tales & Grammar',
+                level: 'Advanced',
+                description: 'Deep dive into complex sentence structuring and traditional folklore stories.',
+                duration: '8 Weeks',
+                lessons: [
+                    { id: 'l7', title: 'Advanced Verb Conjugations', duration: '35 min', completed: false },
+                    { id: 'l8', title: 'Traditional Harvest Song Translation', duration: '40 min', completed: false }
+                ]
+            }
+        ];
+
+        const DEFAULT_FLASHCARDS = [
+            { id: 'f1', molsom: 'Chibai', english: 'Hello / Greetings', category: 'Greetings' },
+            { id: 'f2', molsom: 'Mang-pha', english: 'Goodbye', category: 'Greetings' },
+            { id: 'f3', molsom: 'Raw', english: 'Water', category: 'Food & Drink' },
+            { id: 'f4', molsom: 'Bawm', english: 'Rice / Food', category: 'Food & Drink' },
+            { id: 'f5', molsom: 'In', english: 'House / Home', category: 'Daily Life' },
+            { id: 'f6', molsom: 'Pa', english: 'Father', category: 'Family' },
+            { id: 'f7', molsom: 'Nu', english: 'Mother', category: 'Family' }
+        ];
+
+        // LocalStorage Initializer
+        function getStoredData(key, defaultVal) {
+            const val = localStorage.getItem('molsom_' + key);
+            return val ? JSON.parse(val) : defaultVal;
+        }
+
+        function setStoredData(key, data) {
+            localStorage.setItem('molsom_' + key, JSON.stringify(data));
+        }
+
+        let state = {
+            currentTab: 'home', // home, courses, flashcards, dashboard, admin, register, login
+            currentUser: getStoredData('currentUser', null), // { name, email, role: 'student'|'admin', enrolledCourses: [] }
+            students: getStoredData('students', [
+                { id: 's1', name: 'Lalduhsanga Molsom', email: 'lalduh@molsom.edu', status: 'Approved', enrolled: ['c1'], progress: 65 },
+                { id: 's2', name: 'Zothanpuii', email: 'zothan@molsom.edu', status: 'Pending', enrolled: ['c2'], progress: 20 },
+                { id: 's3', name: 'Vanlalruata', email: 'ruata@molsom.edu', status: 'Approved', enrolled: ['c1', 'c2'], progress: 90 }
+            ]),
+            courses: getStoredData('courses', DEFAULT_COURSES),
+            flashcards: getStoredData('flashcards', DEFAULT_FLASHCARDS),
+            activeFlashcardIdx: 0,
+            flashcardFlipped: false
+        };
+
+        function saveState() {
+            setStoredData('currentUser', state.currentUser);
+            setStoredData('students', state.students);
+            setStoredData('courses', state.courses);
+            setStoredData('flashcards', state.flashcards);
+        }
+
+        // --- Toast Notification System ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bgCol = type === 'success' ? 'bg-slate-900 text-white' : 'bg-red-600 text-white';
+            toast.className = `${bgCol} px-4 py-3 rounded-xl shadow-xl flex items-center justify-between text-sm font-medium transform transition-all duration-300 translate-y-2 opacity-0 pointer-events-auto`;
+            toast.innerHTML = `
+                <span>${message}</span>
+                <button onclick="this.parentElement.remove()" class="ml-3 text-slate-400 hover:text-white">&times;</button>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // --- Router & Rendering Engine ---
+        function navigate(tab) {
+            state.currentTab = tab;
+            render();
+            window.scrollTo(0, 0);
+        }
+
+        function render() {
+            const mainContent = document.getElementById('main-content');
+            const bottomNav = document.getElementById('bottom-nav');
+            const roleBadge = document.getElementById('user-role-badge');
+
+            // Update Header Auth Badge
+            if (state.currentUser) {
+                roleBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-brand-500 inline-block mr-1"></span>${state.currentUser.role === 'admin' ? 'Admin' : 'Student'}: ${state.currentUser.name.split(' ')[0]}`;
+            } else {
+                roleBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 inline-block mr-1"></span>Guest`;
+            }
+
+            // Render Nav
+            renderBottomNav(bottomNav);
+
+            // Render Current Tab Content
+            switch(state.currentTab) {
+                case 'home':
+                    mainContent.innerHTML = renderHome();
+                    break;
+                case 'courses':
+                    mainContent.innerHTML = renderCourses();
+                    break;
+                case 'flashcards':
+                    mainContent.innerHTML = renderFlashcards();
+                    break;
+                case 'dashboard':
+                    mainContent.innerHTML = renderDashboard();
+                    break;
+                case 'admin':
+                    mainContent.innerHTML = state.currentUser && state.currentUser.role === 'admin' ? renderAdmin() : renderLoginPrompt('Admin Dashboard');
+                    break;
+                case 'register':
+                    mainContent.innerHTML = renderRegister();
+                    break;
+                case 'login':
+                    mainContent.innerHTML = renderLogin();
+                    break;
+                default:
+                    mainContent.innerHTML = renderHome();
+            }
+
+            // Refresh Lucide icons
+            lucide.createIcons();
+        }
+
+        function renderBottomNav(container) {
+            if (['register', 'login'].includes(state.currentTab)) {
+                container.innerHTML = `
+                    <div class="text-xs text-slate-500 py-1 flex items-center justify-center space-x-2 w-full">
+                        <span>Already have an account?</span>
+                        <button onclick="navigate('login')" class="text-brand-600 font-semibold hover:underline">Log in</button>
+                    </div>
+                `;
+                return;
+            }
+
+            const isStudent = state.currentUser && state.currentUser.role === 'student';
+            const isAdmin = state.currentUser && state.currentUser.role === 'admin';
+
+            let navItems = [
+                { id: 'home', label: 'Home', icon: 'home' },
+                { id: 'courses', label: 'Courses', icon: 'book-open' },
+                { id: 'flashcards', label: 'Flashcards', icon: 'layers' }
+            ];
+
+            if (isAdmin) {
+                navItems.push({ id: 'admin', label: 'Admin Portal', icon: 'shield-check' });
+            } else if (isStudent) {
+                navItems.push({ id: 'dashboard', label: 'My Portal', icon: 'user-check' });
+            } else {
+                navItems.push({ id: 'login', label: 'Login', icon: 'log-in' });
+            }
+
+            container.innerHTML = navItems.map(item => {
+                const active = state.currentTab === item.id;
+                const activeClass = active ? 'text-brand-600 bg-brand-50' : 'text-slate-500 hover:text-slate-900';
+                return `
+                    <button onclick="navigate('${item.id}')" class="flex flex-col items-center justify-center flex-1 py-1 px-2 rounded-xl transition ${activeClass}">
+                        <i data-lucide="${item.icon}" class="w-5 h-5 mb-1"></i>
+                        <span class="text-[11px] font-medium leading-none">${item.label}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        // --- STREAMING_CHUNK:Building Home View ---
+        function renderHome() {
+            return `
+                <div class="p-5 space-y-6">
+                    <!-- Hero Banner -->
+                    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-700 via-brand-600 to-emerald-800 text-white p-6 shadow-xl">
+                        <div class="absolute -right-6 -bottom-6 opacity-15">
+                            <i data-lucide="languages" class="w-44 h-44"></i>
+                        </div>
+                        <div class="relative z-10 space-y-3">
+                            <span class="bg-emerald-500/30 backdrop-blur-md text-emerald-100 text-[11px] font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Official PWA Portal</span>
+                            <h2 class="text-2xl font-bold tracking-tight">Molsom Language Learning Institute</h2>
+                            <p class="text-xs text-emerald-100 leading-relaxed font-light">Preserving and teaching the rich heritage of the Molsom (Kha) indigenous language through structured modern lessons.</p>
+                            <div class="pt-2 flex items-center space-x-3">
+                                ${!state.currentUser ? `
+                                    <button onclick="navigate('register')" class="bg-white text-brand-900 font-semibold px-4 py-2.5 rounded-xl text-xs shadow-md hover:bg-emerald-50 transition flex items-center space-x-1.5">
+                                        <span>Student Registration</span>
+                                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                                    </button>
+                                    <button onclick="navigate('login')" class="bg-emerald-800/60 text-white font-medium px-4 py-2.5 rounded-xl text-xs hover:bg-emerald-800 transition">
+                                        Login
+                                    </button>
+                                ` : `
+                                    <button onclick="navigate('${state.currentUser.role === 'admin' ? 'admin' : 'dashboard'}')" class="bg-white text-brand-900 font-semibold px-4 py-2 rounded-xl text-xs shadow-md hover:bg-emerald-50 transition">
+                                        Go to My Dashboard
+                                    </button>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Stats Grid -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                                <i data-lucide="book-marked" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-900">${state.courses.length}</h3>
+                                <p class="text-[11px] text-slate-500 font-medium">Active Courses</p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+                                <i data-lucide="users" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-900">${state.students.length}</h3>
+                                <p class="text-[11px] text-slate-500 font-medium">Enrolled Students</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Featured Section -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-slate-900 text-sm">Featured Courses</h3>
+                            <button onclick="navigate('courses')" class="text-xs font-semibold text-brand-600 hover:underline">View All</button>
+                        </div>
+                        <div class="space-y-3">
+                            ${state.courses.slice(0, 2).map(c => `
+                                <div onclick="navigate('courses')" class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm hover:border-brand-500 cursor-pointer transition space-y-2">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-brand-50 text-brand-700">${c.level}</span>
+                                        <span class="text-[11px] text-slate-400 font-medium flex items-center"><i data-lucide="clock" class="w-3 h-3 mr-1"></i>${c.duration}</span>
+                                    </div>
+                                    <h4 class="font-bold text-slate-900 text-sm">${c.title}</h4>
+                                    <p class="text-xs text-slate-500 line-clamp-2">${c.description}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Cultural Note Banner -->
+                    <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-amber-900 space-y-1.5">
+                        <div class="flex items-center space-x-2 text-amber-800 font-bold text-xs uppercase tracking-wider">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-amber-600"></i>
+                            <span>Did you know?</span>
+                        </div>
+                        <p class="text-xs text-amber-900 leading-relaxed font-light">Molsom is an indigenous language spoken primarily in Tripura and parts of Assam and Mizoram. Learning Molsom helps preserve vital oral traditions and community bonds.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- STREAMING_CHUNK:Building Courses Catalog View ---
+        function renderCourses() {
+            return `
+                <div class="p-5 space-y-5">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-900">Course Catalog</h2>
+                            <p class="text-xs text-slate-500">Explore structured lessons in Molsom</p>
+                        </div>
+                        ${state.currentUser && state.currentUser.role === 'admin' ? `
+                            <button onclick="openAddCourseModal()" class="bg-brand-600 text-white px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center space-x-1 shadow-sm hover:bg-brand-700">
+                                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                <span>Add Course</span>
+                            </button>
+                        ` : ''}
+                    </div>
+
+                    <div class="space-y-4">
+                        ${state.courses.map(course => {
+                            const isEnrolled = state.currentUser && state.currentUser.enrolledCourses && state.currentUser.enrolledCourses.includes(course.id);
+                            return `
+                                <div class="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm space-y-3">
+                                    <div class="flex items-start justify-between">
+                                        <div>
+                                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 uppercase">${course.level}</span>
+                                            <h3 class="font-bold text-slate-900 text-sm mt-1">${course.title}</h3>
+                                        </div>
+                                        <span class="text-xs text-slate-500 font-medium bg-slate-50 px-2 py-1 rounded-lg">${course.duration}</span>
+                                    </div>
+                                    <p class="text-xs text-slate-600">${course.description}</p>
+                                    
+                                    <!-- Lesson accordion list -->
+                                    <div class="border-t border-slate-100 pt-3 space-y-2">
+                                        <h4 class="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Lessons (${course.lessons.length})</h4>
+                                        <div class="space-y-1.5">
+                                            ${course.lessons.map((l, idx) => `
+                                                <div class="flex items-center justify-between text-xs bg-slate-50 p-2 rounded-xl">
+                                                    <span class="font-medium text-slate-700">${idx + 1}. ${l.title}</span>
+                                                    <span class="text-[10px] text-slate-400">${l.duration}</span>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+
+                                    <div class="pt-2 flex items-center justify-between">
+                                        <span class="text-[11px] text-slate-500 font-medium">Certified by Molsom Institute</span>
+                                        ${state.currentUser ? `
+                                            ${isEnrolled ? `
+                                                <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-xl flex items-center space-x-1">
+                                                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
+                                                    <span>Enrolled</span>
+                                                </span>
+                                            ` : `
+                                                <button onclick="enrollCourse('${course.id}')" class="bg-brand-600 text-white text-xs font-semibold px-3.5 py-1.5 rounded-xl hover:bg-brand-700 transition">
+                                                    Enroll Now
+                                                </button>
+                                            `}
+                                        ` : `
+                                            <button onclick="navigate('register')" class="text-xs text-brand-600 font-semibold hover:underline">
+                                                Register to Enroll
+                                            </button>
+                                        `}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function enrollCourse(courseId) {
+            if (!state.currentUser) {
+                navigate('register');
+                return;
+            }
+            if (!state.currentUser.enrolledCourses) {
+                state.currentUser.enrolledCourses = [];
+            }
+            if (state.currentUser.enrolledCourses.includes(courseId)) {
+                showToast('Already enrolled in this course!', 'error');
+                return;
+            }
+            state.currentUser.enrolledCourses.push(courseId);
+            
+            // Also update students list
+            const st = state.students.find(s => s.email === state.currentUser.email);
+            if (st) {
+                if (!st.enrolled) st.enrolled = [];
+                st.enrolled.push(courseId);
+            }
+            saveState();
+            showToast('Successfully enrolled in course!');
+            render();
+        }
+
+        // --- STREAMING_CHUNK:Building Flashcards View ---
+        function renderFlashcards() {
+            const card = state.flashcards[state.activeFlashcardIdx];
+            return `
+                <div class="p-5 space-y-6 flex flex-col items-center min-h-[70vh] justify-center">
+                    <div class="text-center space-y-1">
+                        <h2 class="text-lg font-bold text-slate-900">Vocabulary Flashcards</h2>
+                        <p class="text-xs text-slate-500">Tap card to flip and test your Molsom words</p>
+                    </div>
+
+                    <!-- Flashcard Card Container -->
+                    <div onclick="toggleFlashcardFlip()" class="w-full max-w-xs h-64 bg-gradient-to-br from-brand-600 to-emerald-700 rounded-3xl shadow-xl text-white p-6 flex flex-col justify-between cursor-pointer transform transition active:scale-95 select-none relative overflow-hidden">
+                        <div class="absolute top-4 right-4 bg-white/20 px-2.5 py-1 rounded-full text-[10px] font-semibold backdrop-blur-sm">
+                            ${card.category}
+                        </div>
+                        <div class="absolute top-4 left-4 text-white/60 text-xs font-mono">
+                            ${state.activeFlashcardIdx + 1} / ${state.flashcards.length}
+                        </div>
+
+                        <div class="my-auto text-center space-y-2">
+                            <span class="text-xs text-emerald-200 uppercase tracking-widest font-semibold">${state.flashcardFlipped ? 'English Meaning' : 'Molsom (Kha)'}</span>
+                            <h3 class="text-3xl font-extrabold tracking-tight">${state.flashcardFlipped ? card.english : card.molsom}</h3>
+                        </div>
+
+                        <div class="text-center text-xs text-emerald-100/80 font-medium">
+                            Tap to flip ↺
+                        </div>
+                    </div>
+
+                    <!-- Navigation controls -->
+                    <div class="flex items-center space-x-4 w-full max-w-xs">
+                        <button onclick="prevFlashcard()" class="flex-1 bg-white border border-slate-200 text-slate-700 py-2.5 rounded-xl font-semibold text-xs shadow-sm hover:bg-slate-50 transition flex items-center justify-center space-x-1">
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                            <span>Previous</span>
+                        </button>
+                        <button onclick="nextFlashcard()" class="flex-1 bg-brand-600 text-white py-2.5 rounded-xl font-semibold text-xs shadow-md hover:bg-brand-700 transition flex items-center justify-center space-x-1">
+                            <span>Next</span>
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+
+                    ${state.currentUser && state.currentUser.role === 'admin' ? `
+                        <button onclick="openAddFlashcardModal()" class="text-xs text-brand-600 font-semibold hover:underline">
+                            + Add New Vocabulary Word
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function toggleFlashcardFlip() {
+            state.flashcardFlipped = !state.flashcardFlipped;
+            render();
+        }
+
+        function nextFlashcard() {
+            state.flashcardFlipped = false;
+            state.activeFlashcardIdx = (state.activeFlashcardIdx + 1) % state.flashcards.length;
+            render();
+        }
+
+        function prevFlashcard() {
+            state.flashcardFlipped = false;
+            state.activeFlashcardIdx = (state.activeFlashcardIdx - 1 + state.flashcards.length) % state.flashcards.length;
+            render();
+        }
+
+        // --- STREAMING_CHUNK:Building Student Dashboard View ---
+        function renderDashboard() {
+            if (!state.currentUser) {
+                return renderLoginPrompt('Student Dashboard');
+            }
+
+            const userCourses = state.courses.filter(c => state.currentUser.enrolledCourses && state.currentUser.enrolledCourses.includes(c.id));
+
+            return `
+                <div class="p-5 space-y-6">
+                    <!-- User Welcome Card -->
+                    <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 rounded-2xl bg-brand-100 text-brand-700 flex items-center justify-center font-bold text-lg shadow-inner">
+                                ${state.currentUser.name.charAt(0)}
+                            </div>
+                            <div>
+                                <h2 class="font-bold text-slate-900 text-sm">${state.currentUser.name}</h2>
+                                <p class="text-xs text-slate-500">${state.currentUser.email}</p>
+                                <span class="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-50 text-brand-700">Student Account</span>
+                            </div>
+                        </div>
+                        <button onclick="logout()" class="text-slate-400 hover:text-red-600 p-2 rounded-xl transition" title="Log out">
+                            <i data-lucide="log-out" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+
+                    <!-- Progress Stats -->
+                    <div class="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm space-y-3">
+                        <div class="flex items-center justify-between text-xs font-semibold text-slate-700">
+                            <span>Overall Learning Progress</span>
+                            <span class="text-brand-600">45% Completed</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                            <div class="bg-brand-600 h-full rounded-full" style="width: 45%"></div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 pt-2 text-center">
+                            <div class="bg-slate-50 p-2 rounded-xl">
+                                <span class="text-base font-bold text-slate-900">${userCourses.length}</span>
+                                <p class="text-[10px] text-slate-500">Enrolled</p>
+                            </div>
+                            <div class="bg-slate-50 p-2 rounded-xl">
+                                <span class="text-base font-bold text-slate-900">3</span>
+                                <p class="text-[10px] text-slate-500">Completed</p>
+                            </div>
+                            <div class="bg-slate-50 p-2 rounded-xl">
+                                <span class="text-base font-bold text-slate-900">12</span>
+                                <p class="text-[10px] text-slate-500">Words Learned</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- My Enrolled Courses -->
+                    <div class="space-y-3">
+                        <h3 class="font-bold text-slate-900 text-sm">My Enrolled Courses</h3>
+                        ${userCourses.length === 0 ? `
+                            <div class="bg-white border border-slate-200 rounded-2xl p-6 text-center space-y-3">
+                                <p class="text-xs text-slate-500">You are not enrolled in any courses yet.</p>
+                                <button onclick="navigate('courses')" class="bg-brand-600 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-sm">
+                                    Browse Courses
+                                </button>
+                            </div>
+                        ` : `
+                            <div class="space-y-3">
+                                ${userCourses.map(c => `
+                                    <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-2">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-brand-50 text-brand-700">${c.level}</span>
+                                            <span class="text-xs text-slate-500 font-medium">${c.duration}</span>
+                                        </div>
+                                        <h4 class="font-bold text-slate-900 text-sm">${c.title}</h4>
+                                        <div class="pt-2 flex items-center justify-between text-xs">
+                                            <span class="text-slate-500">Lessons: ${c.lessons.length} modules</span>
+                                            <button onclick="showToast('Opening lesson player...')" class="text-brand-600 font-semibold hover:underline">Continue Learning →</button>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `}
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- STREAMING_CHUNK:Building Admin Portal View ---
+        function renderAdmin() {
+            return `
+                <div class="p-5 space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-900">Admin & Teacher Portal</h2>
+                            <p class="text-xs text-slate-500">Manage institute students and courses</p>
+                        </div>
+                        <button onclick="logout()" class="text-xs text-red-600 font-semibold bg-red-50 px-3 py-1.5 rounded-xl hover:bg-red-100 transition">
+                            Log out
+                        </button>
+                    </div>
+
+                    <!-- Analytics Summary Cards -->
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm text-center">
+                            <span class="text-lg font-bold text-slate-900">${state.students.length}</span>
+                            <p class="text-[10px] text-slate-500 font-medium">Total Students</p>
+                        </div>
+                        <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm text-center">
+                            <span class="text-lg font-bold text-emerald-600">${state.students.filter(s => s.status === 'Approved').length}</span>
+                            <p class="text-[10px] text-slate-500 font-medium">Approved</p>
+                        </div>
+                        <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm text-center">
+                            <span class="text-lg font-bold text-amber-600">${state.students.filter(s => s.status === 'Pending').length}</span>
+                            <p class="text-[10px] text-slate-500 font-medium">Pending</p>
+                        </div>
+                    </div>
+
+                    <!-- Student Management Section -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-slate-900 text-sm">Registered Students & Approvals</h3>
+                            <button onclick="openAddStudentModal()" class="text-xs text-brand-600 font-semibold hover:underline">+ Add Student</button>
+                        </div>
+                        <div class="space-y-2">
+                            ${state.students.map(st => `
+                                <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-sm flex items-center justify-between">
+                                    <div class="space-y-0.5">
+                                        <h4 class="font-bold text-slate-900 text-xs">${st.name}</h4>
+                                        <p class="text-[10px] text-slate-500">${st.email}</p>
+                                        <span class="inline-block text-[9px] px-2 py-0.5 rounded-full font-semibold ${st.status === 'Approved' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}">${st.status}</span>
+                                    </div>
+                                    <div class="flex items-center space-x-1">
+                                        ${st.status === 'Pending' ? `
+                                            <button onclick="approveStudent('${st.email}')" class="bg-brand-600 text-white text-[10px] font-semibold px-2.5 py-1 rounded-lg hover:bg-brand-700">Approve</button>
+                                        ` : `
+                                            <button onclick="toggleStudentStatus('${st.email}')" class="text-slate-400 hover:text-amber-600 text-[10px] px-2 py-1 rounded-lg">Suspend</button>
+                                        `}
+                                        <button onclick="deleteStudent('${st.email}')" class="text-slate-400 hover:text-red-600 p-1 rounded-lg">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Quick Course Management -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-slate-900 text-sm">Course Management</h3>
+                            <button onclick="openAddCourseModal()" class="text-xs text-brand-600 font-semibold hover:underline">+ Add Course</button>
+                        </div>
+                        <div class="space-y-2">
+                            ${state.courses.map(c => `
+                                <div class="bg-white border border-slate-200/80 rounded-2xl p-3 shadow-sm flex items-center justify-between">
+                                    <div>
+                                        <h4 class="font-bold text-slate-900 text-xs">${c.title}</h4>
+                                        <span class="text-[10px] text-slate-500">${c.level} • ${c.duration}</span>
+                                    </div>
+                                    <button onclick="deleteCourse('${c.id}')" class="text-slate-400 hover:text-red-600 p-1 rounded-lg">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function approveStudent(email) {
+            const st = state.students.find(s => s.email === email);
+            if (st) {
+                st.status = 'Approved';
+                saveState();
+                showToast(`Approved student ${st.name}`);
+                render();
+            }
+        }
+
+        function toggleStudentStatus(email) {
+            const st = state.students.find(s => s.email === email);
+            if (st) {
+                st.status = st.status === 'Approved' ? 'Pending' : 'Approved';
+                saveState();
+                showToast(`Updated student status to ${st.status}`);
+                render();
+            }
+        }
+
+        function deleteStudent(email) {
+            state.students = state.students.filter(s => s.email !== email);
+            saveState();
+            showToast('Student removed successfully');
+            render();
+        }
+
+        function deleteCourse(courseId) {
+            state.courses = state.courses.filter(c => c.id !== courseId);
+            saveState();
+            showToast('Course removed successfully');
+            render();
+        }
+
+        // --- STREAMING_CHUNK:Building Registration & Authentication Views ---
+        function renderRegister() {
+            return `
+                <div class="p-6 space-y-5 max-w-sm mx-auto">
+                    <div class="text-center space-y-1">
+                        <div class="w-12 h-12 bg-brand-100 text-brand-700 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner">
+                            <i data-lucide="user-plus" class="w-6 h-6"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-slate-900">Student Registration</h2>
+                        <p class="text-xs text-slate-500">Join the Molsom Language Learning Institute</p>
+                    </div>
+
+                    <form onsubmit="handleRegister(event)" class="space-y-3.5">
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-slate-700 uppercase">Full Name</label>
+                            <input type="text" id="reg-name" required placeholder="e.g. Vanlalhruaia Molsom" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-slate-700 uppercase">Email Address</label>
+                            <input type="email" id="reg-email" required placeholder="student@molsom.edu" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-slate-700 uppercase">Password</label>
+                            <input type="password" id="reg-pass" required placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        </div>
+                        <button type="submit" class="w-full bg-brand-600 text-white font-semibold py-3 rounded-xl text-xs shadow-md hover:bg-brand-700 transition mt-2">
+                            Register Account
+                        </button>
+                    </form>
+
+                    <div class="text-center text-xs text-slate-500 pt-2">
+                        Already registered? <button onclick="navigate('login')" class="text-brand-600 font-semibold hover:underline">Log in</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            
+            if (state.students.some(s => s.email === email)) {
+                showToast('Email is already registered!', 'error');
+                return;
+            }
+
+            const newStudent = { id: 's_' + Date.now(), name, email, status: 'Approved', enrolled: ['c1'], progress: 0 };
+            state.students.push(newStudent);
+            state.currentUser = { name, email, role: 'student', enrolledCourses: ['c1'] };
+            saveState();
+            showToast('Registration successful! Welcome.');
+            navigate('dashboard');
+        }
+
+        function renderLogin() {
+            return `
+                <div class="p-6 space-y-5 max-w-sm mx-auto mt-6">
+                    <div class="text-center space-y-1">
+                        <div class="w-12 h-12 bg-brand-100 text-brand-700 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner">
+                            <i data-lucide="log-in" class="w-6 h-6"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-slate-900">Welcome Back</h2>
+                        <p class="text-xs text-slate-500">Log in to your student or admin portal</p>
+                    </div>
+
+                    <form onsubmit="handleLogin(event)" class="space-y-3.5">
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-slate-700 uppercase">Email Address</label>
+                            <input type="email" id="login-email" required placeholder="admin@molsom.edu or student" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-slate-700 uppercase">Password</label>
+                            <input type="password" id="login-pass" required placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        </div>
+                        
+                        <!-- Quick demo accounts banner -->
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-[11px] text-slate-600 space-y-1">
+                            <p class="font-bold text-slate-700">Demo Quick Logins:</p>
+                            <p>• Admin: <span class="font-mono text-brand-700">admin@molsom.edu</span></p>
+                            <p>• Student: <span class="font-mono text-brand-700">lalduh@molsom.edu</span></p>
+                        </div>
+
+                        <button type="submit" class="w-full bg-brand-600 text-white font-semibold py-3 rounded-xl text-xs shadow-md hover:bg-brand-700 transition">
+                            Log In
+                        </button>
+                    </form>
+
+                    <div class="text-center text-xs text-slate-500 pt-2">
+                        Don't have an account? <button onclick="navigate('register')" class="text-brand-600 font-semibold hover:underline">Register</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+
+            if (email === 'admin@molsom.edu') {
+                state.currentUser = { name: 'Institute Administrator', email: 'admin@molsom.edu', role: 'admin', enrolledCourses: [] };
+                saveState();
+                showToast('Logged in as Administrator');
+                navigate('admin');
+                return;
+            }
+
+            const student = state.students.find(s => s.email === email);
+            if (student) {
+                state.currentUser = { name: student.name, email: student.email, role: 'student', enrolledCourses: student.enrolled || ['c1'] };
+                saveState();
+                showToast(`Welcome back, ${student.name}!`);
+                navigate('dashboard');
+                return;
+            }
+
+            // Create temporary student if not found for testing convenience
+            const newSt = { id: 's_' + Date.now(), name: email.split('@')[0], email, status: 'Approved', enrolled: ['c1'], progress: 10 };
+            state.students.push(newSt);
+            state.currentUser = { name: newSt.name, email, role: 'student', enrolledCourses: ['c1'] };
+            saveState();
+            showToast('Logged in successfully!');
+            navigate('dashboard');
+        }
+
+        function logout() {
+            state.currentUser = null;
+            saveState();
+            showToast('Logged out successfully');
+            navigate('home');
+        }
+
+        function renderLoginPrompt(title) {
+            return `
+                <div class="p-8 text-center space-y-4 my-auto flex flex-col items-center justify-center min-h-[60vh]">
+                    <div class="w-14 h-14 bg-amber-100 text-amber-700 rounded-2xl flex items-center justify-center shadow-inner">
+                        <i data-lucide="lock" class="w-7 h-7"></i>
+                    </div>
+                    <div class="space-y-1">
+                        <h2 class="text-lg font-bold text-slate-900">${title}</h2>
+                        <p class="text-xs text-slate-500 max-w-xs">Please log in with your student or administrator account to access this portal.</p>
+                    </div>
+                    <div class="flex items-center space-x-3 pt-2">
+                        <button onclick="navigate('login')" class="bg-brand-600 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-md">Log In</button>
+                        <button onclick="navigate('register')" class="bg-slate-100 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-semibold hover:bg-slate-200">Register</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- STREAMING_CHUNK:Modals & Source Code Download Feature ---
+        function openModal(htmlContent) {
+            const container = document.getElementById('modal-container');
+            const content = document.getElementById('modal-content');
+            content.innerHTML = htmlContent;
+            container.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeModal() {
+            document.getElementById('modal-container').classList.add('hidden');
+        }
+
+        function openDownloadModal() {
+            open(`
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-slate-900 text-base">Download App Source Code</h3>
+                        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600">&times;</button>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">You can download the entire PWA source code as a single standalone HTML file with embedded Tailwind CSS, Lucide icons, and localStorage persistence.</p>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs font-mono text-slate-700">
+                        molsom-institute-pwa.html
+                    </div>
+                    <div class="flex items-center space-x-3 pt-2">
+                        <button onclick="downloadSourceCode()" class="flex-1 bg-brand-600 text-white py-2.5 rounded-xl font-semibold text-xs shadow-md hover:bg-brand-700 transition flex items-center justify-center space-x-1.5">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            <span>Download HTML File</span>
+                        </button>
+                        <button onclick="closeModal()" class="px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl text-xs font-semibold hover:bg-slate-200">Cancel</button>
+                    </div>
+                </div>
+            `);
+        }
+
+        function downloadSourceCode() {
+            const htmlContent = document.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'molsom-language-institute-pwa.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            closeModal();
+            showToast('Source code downloaded successfully!');
+        }
+
+        function openAddCourseModal() {
+            open(`
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-slate-900 text-base">Add New Course</h3>
+                        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600">&times;</button>
+                    </div>
+                    <form onsubmit="handleAddCourse(event)" class="space-y-3">
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-slate-700 uppercase">Course Title</label>
+                            <input type="text" id="modal-c-title" required placeholder="e.g. Advanced Molsom Poetry" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-slate-700 uppercase">Level</label>
+                            <select id="modal-c-level" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs bg-white">
+                                <option value="Beginner">Beginner</option>
+                                <option value="Intermediate">Intermediate</option>
+                                <option value="Advanced">Advanced</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-slate-700 uppercase">Duration</label>
+                            <input type="text" id="modal-c-dur" required placeholder="e.g. 5 Weeks" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-slate-700 uppercase">Description</label>
+                            <textarea id="modal-c-desc" required rows="2" placeholder="Course summary..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-brand-600 text-white font-semibold py-2.5 rounded-xl text-xs shadow-md">Add Course</button>
+                    </form>
+                </div>
+            `);
+        }
+
+        function handleAddCourse(e) {
+            e.preventDefault();
+            const title = document.getElementById('modal-c-title').value;
+            const level = document.getElementById('modal-c-level').value;
+            const duration = document.getElementById('modal-c-dur').value;
+            const description = document.getElementById('modal-c-desc').value;
+
+            const newCourse = {
+                id: 'c_' + Date.now(),
+                title,
+                level,
+                duration,
+                description,
+                lessons: [
+                    { id: 'l_1', title: 'Introduction & Basics', duration: '15 min', completed: false },
+                    { id: 'l_2', title: 'Core Vocabulary & Practice', duration: '20 min', completed: false }
+                ]
+            };
+
+            state.courses.push(newCourse);
+            saveState();
+            closeModal();
+            showToast('Course added successfully!');
+            render();
+        }
+
+        function openAddFlashcardModal() {
+            open(`
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-slate-900 text-base">Add Vocabulary Flashcard</h3>
+                        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600">&times;</button>
+                    </div>
+                    <form onsubmit="handleAddFlashcard(event)" class="space-y-3">
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-slate-700 uppercase">Molsom Word (Kha)</label>
+                            <input type="text" id="modal-f-molsom" required placeholder="e.g. Chibai" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-slate-700 uppercase">English Meaning</label>
+                            <input type="text" id="modal-f-eng" required placeholder="e.g. Hello" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-slate-700 uppercase">Category</label>
+                            <input type="text" id="modal-f-cat" required placeholder="e.g. Greetings" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">
+                        </div>
+                        <button type="submit" class="w-full bg-brand-600 text-white font-semibold py-2.5 rounded-xl text-xs shadow-md">Add Flashcard</button>
+                    </form>
+                </div>
+            `);
+        }
+
+        function handleAddFlashcard(e) {
+            e.preventDefault();
+            const molsom = document.getElementById('modal-f-molsom').value;
+            const english = document.getElementById('modal-f-eng').value;
+            const category = document.getElementById('modal-f-cat').value;
+
+            state.flashcards.push({ id: 'f_' + Date.now(), molsom, english, category });
+            saveState();
+            closeModal();
+            showToast('Flashcard added successfully!');
+            render();
+        }
+
+        function openAddStudentModal() {
+            open(`
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-slate-900 text-base">Register New Student</h3>
+                        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600">&times;</button>
+                    </div>
+                    <form onsubmit="handleAddStudentAdmin(event)" class="space-y-3">
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-slate-700 uppercase">Full Name</label>
+                            <input type="text" id="modal-s-name" required placeholder="Student Name" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-slate-700 uppercase">Email Address</label>
+                            <input type="email" id="modal-s-email" required placeholder="student@molsom.edu" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">
+                        </div>
+                        <button type="submit" class="w-full bg-brand-600 text-white font-semibold py-2.5 rounded-xl text-xs shadow-md">Register Student</button>
+                    </form>
+                </div>
+            `);
+        }
+
+        function handleAddStudentAdmin(e) {
+            e.preventDefault();
+            const name = document.getElementById('modal-s-name').value;
+            const email = document.getElementById('modal-s-email').value;
+
+            if (state.students.some(s => s.email === email)) {
+                showToast('Student email already exists!', 'error');
+                return;
+            }
+
+            state.students.push({ id: 's_' + Date.now(), name, email, status: 'Approved', enrolled: ['c1'], progress: 0 });
+            saveState();
+            closeModal();
+            showToast('Student added successfully!');
+            render();
+        }
+
+        // Initialize application on window load
+        window.onload = function() {
+            render();
+        };
+    </script>
+</body>
+</html>
