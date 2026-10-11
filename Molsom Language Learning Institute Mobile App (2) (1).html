@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Molsom Language Learning Institute</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for iOS-style icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        /* Custom Mobile App Scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.5);
+            border-radius: 4px;
+        }
+        /* App container max-width for desktop view */
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            position: relative;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        @media (min-width: 640px) {
+            .app-container {
+                min-height: 85vh;
+                margin-top: 5vh;
+                margin-bottom: 5vh;
+                border-radius: 2.5rem;
+                overflow: hidden;
+                border: 8px solid #1f2937;
+            }
+        }
+        .flashcard-container {
+            perspective: 1000px;
+        }
+        .flashcard {
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+        .flashcard-face {
+            backface-visibility: hidden;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .flashcard-back {
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex justify-center items-center h-full">
+
+    <div class="app-container bg-slate-50 dark:bg-gray-900 flex flex-col w-full relative overflow-hidden">
+
+        <!-- iOS Status Bar Simulation -->
+        <div class="bg-brand-700 dark:bg-gray-900 text-white px-6 py-2 flex justify-between items-center text-xs font-semibold z-30 transition-colors">
+            <span id="current-time">9:41</span>
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-signal text-[10px]"></i>
+                <i class="fa-solid fa-wifi text-[10px]"></i>
+                <i class="fa-solid fa-battery-full text-xs"></i>
+            </div>
+        </div>
+
+        <!-- App Header (Dynamic Title & Actions) -->
+        <header class="bg-brand-700 dark:bg-gray-900 text-white px-5 py-3 shadow-md flex justify-between items-center z-20 transition-colors">
+            <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center font-bold text-lg">
+                    <i class="fa-solid fa-graduation-cap text-white"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-base leading-tight tracking-wide">Molsom Institute</h1>
+                    <p class="text-[11px] text-brand-100 dark:text-gray-400">โมลซัม ภาษาและวัฒนธรรม</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button onclick="toggleDarkMode()" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition active:scale-95" aria-label="Toggle Theme">
+                    <i id="theme-icon" class="fa-solid fa-moon text-sm"></i>
+                </button>
+                <button onclick="openInstallModal()" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition active:scale-95" aria-label="Install App">
+                    <i class="fa-solid fa-arrow-down-to-bracket text-sm"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Scrollable Content Area -->
+        <main id="main-content" class="flex-1 overflow-y-auto pb-24 relative">
+            
+            <!-- VIEW 1: HOME TAB -->
+            <div id="view-home" class="view-section p-5 space-y-5 animate-fade">
+                <!-- Welcome Banner Card -->
+                <div class="bg-gradient-to-br from-brand-600 to-brand-800 rounded-3xl p-6 text-white shadow-lg relative overflow-hidden">
+                    <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-medium tracking-wide">Level 1 Beginner</span>
+                            <h2 class="text-2xl font-bold mt-2">Jamru, Thanglen! 👋</h2>
+                            <p class="text-brand-100 text-sm mt-1">Welcome back to Molsom language learning.</p>
+                        </div>
+                        <div class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl font-bold border border-white/30">
+                            45%
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-white/20 flex justify-between items-center text-xs">
+                        <span>Daily Streak: <strong class="text-yellow-300">5 Days 🔥</strong></span>
+                        <button onclick="switchTab('courses')" class="bg-white text-brand-800 font-bold px-4 py-2 rounded-xl shadow hover:bg-brand-50 transition active:scale-95">
+                            Continue Learning <i class="fa-solid fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Stats Grid -->
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 text-center">
+                        <div class="text-brand-600 dark:text-brand-400 text-lg mb-1"><i class="fa-solid fa-book-open"></i></div>
+                        <div class="text-xl font-bold" id="stat-lessons">12</div>
+                        <div class="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Lessons Done</div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 text-center">
+                        <div class="text-amber-500 text-lg mb-1"><i class="fa-solid fa-star"></i></div>
+                        <div class="text-xl font-bold" id="stat-words">148</div>
+                        <div class="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Words Learned</div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 text-center">
+                        <div class="text-rose-500 text-lg mb-1"><i class="fa-solid fa-award"></i></div>
+                        <div class="text-xl font-bold" id="stat-quizzes">8</div>
+                        <div class="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Quizzes Passed</div>
+                    </div>
+                </div>
+
+                <!-- Daily Word Feature -->
+                <div class="bg-white dark:bg-gray-800 rounded-3xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-gray-800 dark:text-gray-100 flex items-center">
+                            <i class="fa-solid fa-lightbulb text-yellow-500 mr-2"></i> Word of the Day
+                        </h3>
+                        <span class="text-xs bg-brand-50 dark:bg-brand-900/40 text-brand-600 dark:text-brand-300 px-2.5 py-1 rounded-full font-medium">Molsom / Mro</span>
+                    </div>
+                    <div class="bg-brand-50/60 dark:bg-gray-900 p-4 rounded-2xl flex items-center justify-between border border-brand-100 dark:border-gray-800">
+                        <div>
+                            <div class="text-xl font-extrabold text-brand-700 dark:text-brand-400">"Khabai"</div>
+                            <div class="text-sm font-semibold text-gray-700 dark:text-gray-300 mt-0.5">Meaning: Hello / Greetings</div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Used when greeting elders or guests in the community.</p>
+                        </div>
+                        <button onclick="playAudioPronunciation('Khabai')" class="w-12 h-12 rounded-2xl bg-brand-600 text-white flex items-center justify-center shadow-md hover:bg-brand-700 transition active:scale-95 shrink-0">
+                            <i class="fa-solid fa-volume-high text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Continue Learning Modules Preview -->
+                <div>
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-gray-800 dark:text-gray-100">Featured Lessons</h3>
+                        <button onclick="switchTab('courses')" class="text-xs text-brand-600 dark:text-brand-400 font-semibold hover:underline">See All</button>
+                    </div>
+                    <div class="space-y-3">
+                        <div onclick="openLessonDetail(1)" class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between cursor-pointer hover:border-brand-500 transition">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl font-bold">
+                                    <i class="fa-solid fa-comments"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-sm text-gray-800 dark:text-gray-100">1. Basic Greetings & Introductions</h4>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">10 words • 5 min interactive</p>
+                                </div>
+                            </div>
+                            <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-400">
+                                <i class="fa-solid fa-chevron-right text-xs"></i>
+                            </div>
+                        </div>
+
+                        <div onclick="openLessonDetail(2)" class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between cursor-pointer hover:border-brand-500 transition">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl font-bold">
+                                    <i class="fa-solid fa-utensils"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-sm text-gray-800 dark:text-gray-100">2. Food, Rice & Daily Kitchen</h4>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">14 words • 8 min interactive</p>
+                                </div>
+                            </div>
+                            <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-400">
+                                <i class="fa-solid fa-chevron-right text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 2: COURSES & LESSONS TAB -->
+            <div id="view-courses" class="view-section p-5 space-y-4 hidden animate-fade">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">Molsom Curriculum</h2>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Structured lessons for fluency</p>
+                    </div>
+                    <span class="text-xs bg-brand-100 dark:bg-brand-900 text-brand-700 dark:text-brand-300 font-bold px-3 py-1 rounded-full">6 Levels</span>
+                </div>
+
+                <!-- Course Category Filter -->
+                <div class="flex space-x-2 overflow-x-auto pb-1 text-xs">
+                    <button class="px-4 py-2 rounded-xl bg-brand-600 text-white font-medium shrink-0">All Units</button>
+                    <button class="px-4 py-2 rounded-xl bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-medium shrink-0 border border-gray-200 dark:border-gray-700">Beginner</button>
+                    <button class="px-4 py-2 rounded-xl bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-medium shrink-0 border border-gray-200 dark:border-gray-700">Grammar</button>
+                    <button class="px-4 py-2 rounded-xl bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-medium shrink-0 border border-gray-200 dark:border-gray-700">Culture & Songs</button>
+                </div>
+
+                <!-- Lesson Units List -->
+                <div class="space-y-3" id="lessons-list-container">
+                    <!-- Injected dynamically via JS or static list -->
+                </div>
+            </div>
+
+            <!-- VIEW 3: QUIZ & PRACTICE TAB -->
+            <div id="view-quiz" class="view-section p-5 space-y-4 hidden animate-fade">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">Interactive Quiz</h2>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Test your Molsom vocabulary & grammar</p>
+                    </div>
+                    <span class="text-xs bg-amber-100 text-amber-700 font-bold px-3 py-1 rounded-full"><i class="fa-solid fa-bolt mr-1"></i> Practice Mode</span>
+                </div>
+
+                <!-- Quiz Card Container -->
+                <div id="quiz-card-wrapper" class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                    <div id="quiz-active-area">
+                        <div class="flex justify-between items-center mb-4 text-xs text-gray-400 font-semibold">
+                            <span id="quiz-progress-text">Question 1 of 5</span>
+                            <span id="quiz-score-badge" class="bg-brand-50 dark:bg-brand-900/50 text-brand-600 dark:text-brand-300 px-2.5 py-1 rounded-full">Score: 0</span>
+                        </div>
+                        <div class="w-full bg-gray-100 dark:bg-gray-700 h-2 rounded-full mb-6 overflow-hidden">
+                            <div id="quiz-progress-bar" class="bg-brand-600 h-full w-1/5 transition-all duration-300"></div>
+                        </div>
+
+                        <h3 id="quiz-question-title" class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-2">What is the Molsom word for "Water"?</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-6">Choose the correct translation from the options below:</p>
+
+                        <div id="quiz-options-grid" class="space-y-3">
+                            <!-- Options injected dynamically -->
+                        </div>
+                    </div>
+
+                    <div id="quiz-finished-area" class="hidden text-center py-6 space-y-4">
+                        <div class="w-20 h-20 rounded-full bg-brand-100 dark:bg-brand-900 text-brand-600 dark:text-brand-300 text-3xl flex items-center justify-center mx-auto">
+                            <i class="fa-solid fa-trophy"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Quiz Completed!</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400" id="quiz-final-score-text">You answered 5 of 5 questions correctly.</p>
+                        <button onclick="restartQuiz()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 rounded-2xl shadow-md transition active:scale-95">
+                            Play Again <i class="fa-solid fa-rotate-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 4: VOCABULARY & DICTIONARY TAB -->
+            <div id="view-vocab" class="view-section p-5 space-y-4 hidden animate-fade">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">Molsom Dictionary</h2>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Search words with audio pronunciation</p>
+                    </div>
+                    <button onclick="openFlashcardModal()" class="text-xs bg-brand-100 dark:bg-brand-900 text-brand-700 dark:text-brand-300 font-bold px-3 py-2 rounded-xl flex items-center shadow-sm">
+                        <i class="fa-solid fa-clone mr-1.5"></i> Flashcards
+                    </button>
+                </div>
+
+                <!-- Search Input Bar -->
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-gray-400">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </span>
+                    <input type="text" id="vocab-search-input" oninput="filterVocabulary()" placeholder="Search in Molsom, English or Bengali..." class="w-full bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 pl-11 pr-4 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:border-brand-500 shadow-sm transition">
+                </div>
+
+                <!-- Vocabulary List -->
+                <div id="vocabulary-list" class="space-y-3">
+                    <!-- Vocabulary items injected dynamically -->
+                </div>
+            </div>
+
+            <!-- VIEW 5: PROFILE & CERTIFICATE TAB -->
+            <div id="view-profile" class="view-section p-5 space-y-5 hidden animate-fade">
+                <!-- User Profile Header Card -->
+                <div class="bg-white dark:bg-gray-800 rounded-3xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 flex items-center space-x-4">
+                    <div class="w-16 h-16 rounded-full bg-brand-600 text-white flex items-center justify-center text-2xl font-bold shadow-md">
+                        MI
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="text-lg font-bold text-gray-800 dark:text-gray-100">Molsom Student</h2>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">molsom.learner@institute.org</p>
+                        <span class="inline-block mt-1 bg-brand-50 dark:bg-brand-900/50 text-brand-600 dark:text-brand-300 text-[11px] font-semibold px-2.5 py-0.5 rounded-full">
+                            Level 1 Scholar
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Certificate Generator Preview Card -->
+                <div class="bg-gradient-to-br from-amber-500 to-amber-700 rounded-3xl p-6 text-white shadow-lg relative overflow-hidden">
+                    <div class="absolute right-0 top-0 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+                    <div class="flex items-center space-x-3 mb-3">
+                        <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-certificate"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-base">Course Completion Certificate</h3>
+                            <p class="text-xs text-amber-100">Official Molsom Language Institute</p>
+                        </div>
+                    </div>
+                    <p class="text-xs text-amber-50 mb-4 leading-relaxed">
+                        Complete all 12 lessons and quizzes with 80%+ accuracy to unlock your verified digital certificate of completion.
+                    </p>
+                    <button onclick="previewCertificate()" class="w-full bg-white text-amber-900 font-bold py-3 rounded-2xl shadow hover:bg-amber-50 transition active:scale-95 text-sm flex items-center justify-center">
+                        <i class="fa-solid fa-eye mr-2"></i> Preview Certificate
+                    </button>
+                </div>
+
+                <!-- App Settings & Info -->
+                <div class="bg-white dark:bg-gray-800 rounded-3xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 space-y-3">
+                    <h3 class="font-bold text-sm text-gray-800 dark:text-gray-100 px-2">Institute Information</h3>
+                    <div class="space-y-1 text-xs">
+                        <div class="flex justify-between p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                            <span class="text-gray-500 dark:text-gray-400">App Version</span>
+                            <span class="font-semibold text-gray-800 dark:text-gray-200">v2.4.0 PWA</span>
+                        </div>
+                        <div class="flex justify-between p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                            <span class="text-gray-500 dark:text-gray-400">Community Support</span>
+                            <span class="font-semibold text-brand-600 dark:text-brand-400">support@molsominstitute.org</span>
+                        </div>
+                        <div class="flex justify-between p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer" onclick="openInstallModal()">
+                            <span class="text-gray-500 dark:text-gray-400">Install App Guide</span>
+                            <span class="font-semibold text-brand-600 dark:text-brand-400"><i class="fa-solid fa-arrow-up-right-from-square ml-1"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <nav class="absolute bottom-0 left-0 right-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 px-3 py-2 flex justify-around items-center z-30 transition-colors">
+            <button onclick="switchTab('home')" id="nav-btn-home" class="nav-btn flex flex-col items-center text-brand-600 dark:text-brand-400 transition p-1">
+                <i class="fa-solid fa-house text-lg mb-1"></i>
+                <span class="text-[10px] font-semibold">Home</span>
+            </button>
+            <button onclick="switchTab('courses')" id="nav-btn-courses" class="nav-btn flex flex-col items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 transition p-1">
+                <i class="fa-solid fa-book-bookmark text-lg mb-1"></i>
+                <span class="text-[10px] font-semibold">Lessons</span>
+            </button>
+            <button onclick="switchTab('quiz')" id="nav-btn-quiz" class="nav-btn flex flex-col items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 transition p-1">
+                <i class="fa-solid fa-puzzle-piece text-lg mb-1"></i>
+                <span class="text-[10px] font-semibold">Quiz</span>
+            </button>
+            <button onclick="switchTab('vocab')" id="nav-btn-vocab" class="nav-btn flex flex-col items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 transition p-1">
+                <i class="fa-solid fa-language text-lg mb-1"></i>
+                <span class="text-[10px] font-semibold">Dictionary</span>
+            </button>
+            <button onclick="switchTab('profile')" id="nav-btn-profile" class="nav-btn flex flex-col items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 transition p-1">
+                <i class="fa-solid fa-user text-lg mb-1"></i>
+                <span class="text-[10px] font-semibold">Profile</span>
+            </button>
+        </nav>
+
+        <!-- MODAL: Install PWA Guide -->
+        <div id="install-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden animate-fade">
+            <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-gray-100 dark:border-gray-700 space-y-4">
+                <div class="flex justify-between items-center">
+                    <div class="w-12 h-12 rounded-2xl bg-brand-100 dark:bg-brand-900 text-brand-600 dark:text-brand-300 flex items-center justify-center text-xl font-bold">
+                        <i class="fa-solid fa-mobile-screen-button"></i>
+                    </div>
+                    <button onclick="closeInstallModal()" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500 hover:bg-gray-200">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">Install Molsom App</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Add this app to your mobile home screen for quick offline-ready learning experience like a native app.</p>
+                </div>
+                <div class="space-y-3 bg-gray-50 dark:bg-gray-900 p-4 rounded-2xl text-xs text-gray-600 dark:text-gray-300">
+                    <div class="flex items-start space-x-3">
+                        <span class="w-5 h-5 rounded-full bg-brand-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">1</span>
+                        <p>Tap the browser menu icon (<i class="fa-solid fa-ellipsis-vertical mx-1"></i> or <i class="fa-solid fa-arrow-up-from-bracket mx-1"></i>)</p>
+                    </div>
+                    <div class="flex items-start space-x-3">
+                        <span class="w-5 h-5 rounded-full bg-brand-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">2</span>
+                        <p>Select <strong>"Add to Home Screen"</strong> or <strong>"Install App"</strong></p>
+                    </div>
+                    <div class="flex items-start space-x-3">
+                        <span class="w-5 h-5 rounded-full bg-brand-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">3</span>
+                        <p>Launch Molsom Institute instantly from your home screen!</p>
+                    </div>
+                </div>
+                <button onclick="closeInstallModal()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-2xl shadow transition active:scale-95 text-sm">
+                    Got It
+                </button>
+            </div>
+        </div>
+
+        <!-- MODAL: Flashcards View -->
+        <div id="flashcard-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden animate-fade">
+            <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-gray-100 dark:border-gray-700 space-y-4 text-center">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs font-semibold text-gray-400" id="flashcard-counter">Card 1 of 5</span>
+                    <button onclick="closeFlashcardModal()" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                
+                <!-- 3D Flippable Card -->
+                <div class="flashcard-container h-52 w-full cursor-pointer relative" onclick="flipFlashcard()">
+                    <div id="flashcard-inner" class="flashcard w-full h-full relative rounded-3xl shadow-md">
+                        <!-- Front Face -->
+                        <div class="flashcard-face bg-brand-50 dark:bg-gray-900 border border-brand-100 dark:border-gray-700 rounded-3xl flex flex-col items-center justify-center p-6">
+                            <span class="text-xs text-brand-600 dark:text-brand-400 font-bold mb-2">Molsom Term</span>
+                            <h3 id="fc-front-text" class="text-2xl font-extrabold text-gray-800 dark:text-gray-100">Khabai</h3>
+                            <p class="text-[11px] text-gray-400 mt-4">(Tap to reveal meaning)</p>
+                        </div>
+                        <!-- Back Face -->
+                        <div class="flashcard-face flashcard-back bg-brand-600 text-white rounded-3xl flex flex-col items-center justify-center p-6">
+                            <span class="text-xs text-brand-100 font-bold mb-2">English Translation</span>
+                            <h3 id="fc-back-text" class="text-2xl font-extrabold">Hello / Welcome</h3>
+                            <button onclick="event.stopPropagation(); playAudioPronunciation(document.getElementById('fc-front-text').innerText)" class="mt-4 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl text-xs font-bold flex items-center">
+                                <i class="fa-solid fa-volume-high mr-2"></i> Pronounce
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex space-x-3 pt-2">
+                    <button onclick="prevFlashcard()" class="flex-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 text-gray-700 dark:text-gray-200 font-bold py-3 rounded-2xl text-sm transition">
+                        <i class="fa-solid fa-arrow-left mr-1"></i> Prev
+                    </button>
+                    <button onclick="nextFlashcard()" class="flex-1 bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-2xl text-sm shadow transition">
+                        Next <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: Certificate Preview -->
+        <div id="certificate-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden animate-fade">
+            <div class="bg-amber-50 dark:bg-gray-900 rounded-3xl p-6 max-w-sm w-full shadow-2xl border-4 border-amber-500 text-center space-y-4 relative">
+                <button onclick="closeCertificateModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-amber-200 dark:bg-gray-800 flex items-center justify-center text-amber-900 dark:text-amber-200">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <div class="text-amber-600 dark:text-amber-400 text-3xl mb-1">
+                    <i class="fa-solid fa-award"></i>
+                </div>
+                <h3 class="text-xs font-bold tracking-widest uppercase text-amber-800 dark:text-amber-300">Certificate of Completion</h3>
+                <h4 class="text-lg font-extrabold text-gray-900 dark:text-gray-100">Molsom Language Learning Institute</h4>
+                <p class="text-xs text-gray-600 dark:text-gray-400">This is proudly presented to</p>
+                <div class="text-xl font-bold text-brand-700 dark:text-brand-400 underline decoration-dotted">Dedicated Student</div>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
+                    For successfully completing Level 1 coursework and mastering foundational Molsom vocabulary & grammar.
+                </p>
+                <div class="pt-2 flex justify-between items-center text-[10px] text-gray-400 border-t border-amber-200 dark:border-gray-800">
+                    <span>Date: October 2026</span>
+                    <span class="font-bold text-brand-600">Verified ID: MOL-2026-884</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Clock simulator in top status bar
+        function updateTime() {
+            const now = new Date();
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            document.getElementById('current-time').innerText = hours + ':' + minutes;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Dark mode toggle
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            html.classList.toggle('dark');
+            const isDark = html.classList.contains('dark');
+            const icon = document.getElementById('theme-icon');
+            if (isDark) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
+        }
+
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            // Hide all views
+            const views = document.querySelectorAll('.view-section');
+            views.forEach(v => v.classList.add('hidden'));
+
+            // Show selected view
+            document.getElementById('view-' + tabId).classList.remove('hidden');
+
+            // Reset navigation button states
+            const navButtons = document.querySelectorAll('.nav-btn');
+            navButtons.forEach(btn => {
+                btn.classList.remove('text-brand-600', 'dark:text-brand-400');
+                btn.classList.add('text-gray-400', 'dark:text-gray-500');
+            });
+
+            // Highlight active nav button
+            const activeBtn = document.getElementById('nav-btn-' + tabId);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-gray-400', 'dark:text-gray-500');
+                activeBtn.classList.add('text-brand-600', 'dark:text-brand-400');
+            }
+
+            // Scroll main content to top
+            document.getElementById('main-content').scrollTop = 0;
+        }
+
+        // Dummy audio pronunciation simulation using SpeechSynthesis or toast notification
+        function audioPronunciationToast(word) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(word);
+                utterance.rate = 0.8;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function playAudioPronunciation(word) {
+            audioPronunciationToast(word);
+            // Visual feedback toast
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-14 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg z-50 animate-bounce';
+            toast.innerHTML = `<i class="fa-solid fa-volume-high text-brand-400 mr-2"></i> Playing pronunciation: "${word}"`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        }
+
+        // Mock Lessons Data
+        const lessonsData = [
+            { id: 1, title: '1. Basic Greetings & Salutations', count: '10 words', category: 'Beginner', completed: true, icon: 'fa-comments', color: 'emerald' },
+            { id: 2, title: '2. Family Members & Relations', count: '12 words', category: 'Beginner', completed: true, icon: 'fa-users', color: 'blue' },
+            { id: 3, title: '3. Food, Rice & Kitchen Items', count: '14 words', category: 'Beginner', completed: false, icon: 'fa-utensils', color: 'amber' },
+            { id: 4, title: '4. Numbers & Counting in Molsom', count: '10 words', category: 'Beginner', completed: false, icon: 'fa-calculator', color: 'purple' },
+            { id: 5, title: '5. Daily Routine & Verbs', count: '15 words', category: 'Grammar', completed: false, icon: 'fa-bolt', color: 'rose' },
+            { id: 6, title: '6. Nature, Rivers & Hills', count: '12 words', category: 'Culture', completed: false, icon: 'fa-mountain-sun', color: 'teal' }
+        ];
+
+        function renderLessons() {
+            const container = document.getElementById('lessons-list-container');
+            if (!container) return;
+            container.innerHTML = lessonsData.map(l => `
+                <div onclick="openLessonDetail(${l.id})" class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between cursor-pointer hover:border-brand-500 transition">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 rounded-2xl bg-${l.color}-100 dark:bg-${l.color}-900/40 text-${l.color}-600 dark:text-${l.color}-400 flex items-center justify-center text-xl font-bold">
+                            <i class="fa-solid ${l.icon}"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-sm text-gray-800 dark:text-gray-100">${l.title}</h4>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">${l.count} • ${l.category}</p>
+                        </div>
+                    </div>
+                    <div>
+                        ${l.completed ? '<span class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 flex items-center justify-center text-xs"><i class="fa-solid fa-check"></i></span>' : '<span class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-400"><i class="fa-solid fa-chevron-right text-xs"></i></span>'}
+                    </div>
+                </div>
+            `).join('');
+        }
+        renderLessons();
+
+        function openLessonDetail(lessonId) {
+            const lesson = lessonsData.find(l => l.id === lessonId);
+            const title = lesson ? lesson.title : 'Lesson Details';
+            const modalHtml = `
+                <div id="lesson-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade">
+                    <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-gray-100 dark:border-gray-700 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/40 px-3 py-1 rounded-full">Interactive Lesson</span>
+                            <button onclick="document.getElementById('lesson-modal').remove()" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">${title}</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                            In this module, you will learn core vocabulary words used by the Molsom community. Listen to native audio pronunciation and repeat aloud.
+                        </p>
+                        <div class="space-y-2 bg-gray-50 dark:bg-gray-900 p-3 rounded-2xl text-xs">
+                            <div class="flex justify-between items-center py-1.5 border-b border-gray-200 dark:border-gray-800">
+                                <span class="font-bold text-gray-800 dark:text-gray-200">Khabai</span>
+                                <span class="text-gray-500">Hello / Welcome</span>
+                                <button onclick="playAudioPronunciation('Khabai')" class="text-brand-600"><i class="fa-solid fa-volume-high"></i></button>
+                            </div>
+                            <div class="flex justify-between items-center py-1.5 border-b border-gray-200 dark:border-gray-800">
+                                <span class="font-bold text-gray-800 dark:text-gray-200">Bawk</span>
+                                <span class="text-gray-500">Father</span>
+                                <button onclick="playAudioPronunciation('Bawk')" class="text-brand-600"><i class="fa-solid fa-volume-high"></i></button>
+                            </div>
+                            <div class="flex justify-between items-center py-1.5">
+                                <span class="font-bold text-gray-800 dark:text-gray-200">Nu</span>
+                                <span class="text-gray-500">Mother</span>
+                                <button onclick="playAudioPronunciation('Nu')" class="text-brand-600"><i class="fa-solid fa-volume-high"></i></button>
+                            </div>
+                        </div>
+                        <button onclick="document.getElementById('lesson-modal').remove(); switchTab('quiz');" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-2xl shadow transition text-sm">
+                            Take Lesson Quiz <i class="fa-solid fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        // Mock Quiz Data & Logic
+        const quizQuestions = [
+            { question: 'What is the Molsom word for "Hello / Greetings"?', options: ['Khabai', 'Chibai', 'Bawk', 'Nu'], answer: 0 },
+            { question: 'How do you say "Father" in Molsom language?', options: ['Nu', 'Bawk', 'Tu', 'Phu'], answer: 1 },
+            { question: 'What is the translation for "Mother" (Nu)?', options: ['Sister', 'Mother', 'Brother', 'Grandmother'], answer: 1 },
+            { question: 'Which term refers to "Water" in traditional Molsom?', options: ['Tui', 'Mei', 'Thing', 'Rong'], answer: 0 },
+            { question: 'What is the polite greeting when parting ways?', options: ['Mangnu', 'Mangpha', 'Jatlang', 'Khabai'], answer: 1 }
+        ];
+
+        let currentQuizIndex = 0;
+        let quizScore = 0;
+
+        function loadQuizQuestion() {
+            if (currentQuizIndex >= quizQuestions.length) {
+                document.getElementById('quiz-active-area').classList.add('hidden');
+                document.getElementById('quiz-finished-area').classList.remove('hidden');
+                document.getElementById('quiz-final-score-text').innerText = `You answered ${quizScore} of ${quizQuestions.length} questions correctly!`;
+                return;
+            }
+
+            const q = quizQuestions[currentQuizIndex];
+            document.getElementById('quiz-progress-text').innerText = `Question ${currentQuizIndex + 1} of ${quizQuestions.length}`;
+            document.getElementById('quiz-score-badge').innerText = `Score: ${quizScore}`;
+            document.getElementById('quiz-progress-bar').style.width = `${((currentQuizIndex + 1) / quizQuestions.length) * 100}%`;
+            document.getElementById('quiz-question-title').innerText = q.question;
+
+            const grid = document.getElementById('quiz-options-grid');
+            grid.innerHTML = q.options.map((opt, idx) => `
+                <button onclick="handleQuizAnswer(${idx}, ${q.answer})" class="w-full text-left bg-gray-50 dark:bg-gray-900 hover:bg-brand-50 dark:hover:bg-brand-900/40 text-gray-800 dark:text-gray-200 font-semibold p-4 rounded-2xl border border-gray-200 dark:border-gray-700 transition flex justify-between items-center">
+                    <span>${opt}</span>
+                    <span class="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-800 text-xs flex items-center justify-center font-bold text-gray-500">${String.fromCharCode(65 + idx)}</span>
+                </button>
+            `).join('');
+        }
+
+        function handleQuizAnswer(selectedIndex, correctIndex) {
+            if (selectedIndex === correctIndex) {
+                quizScore++;
+            }
+            currentQuizIndex++;
+            loadQuizQuestion();
+        }
+
+        function restartQuiz() {
+            currentQuizIndex = 0;
+            quizScore = 0;
+            document.getElementById('quiz-active-area').classList.remove('hidden');
+            document.getElementById('quiz-finished-area').classList.add('hidden');
+            loadQuizQuestion();
+        }
+        loadQuizQuestion();
+
+        // Dictionary / Vocabulary Data & Search
+        const vocabularyData = [
+            { molsom: 'Khabai', meaning: 'Hello / Welcome', category: 'Greetings' },
+            { molsom: 'Bawk', meaning: 'Father', category: 'Family' },
+            { molsom: 'Nu', meaning: 'Mother', category: 'Family' },
+            { molsom: 'Tui', meaning: 'Water', category: 'Nature & Daily' },
+            { molsom: 'Mei', meaning: 'Fire', category: 'Nature & Daily' },
+            { molsom: 'Thing', meaning: 'Wood / Tree', category: 'Nature' },
+            { molsom: 'Bawkpi', meaning: 'Elder / Leader', category: 'Society' },
+            { molsom: 'In', meaning: 'House / Home', category: 'Daily Living' }
+        ];
+
+        function renderVocabulary(list) {
+            const container = document.getElementById('vocabulary-list');
+            if (!container) return;
+            if (list.length === 0) {
+                container.innerHTML = '<p class="text-center text-xs text-gray-400 py-6">No matching words found.</p>';
+                return;
+            }
+            container.innerHTML = list.map(v => `
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h4 class="font-bold text-base text-brand-700 dark:text-brand-400">${v.molsom}</h4>
+                            <span class="text-[10px] bg-gray-100 dark:bg-gray-700 text-gray-500 px-2 py-0.5 rounded-full">${v.category}</span>
+                        </div>
+                        <p class="text-xs text-gray-600 dark:text-gray-300 mt-0.5 font-medium">${v.meaning}</p>
+                    </div>
+                    <button onclick="playAudioPronunciation('${v.molsom}')" class="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-900/40 text-brand-600 dark:text-brand-300 flex items-center justify-center hover:bg-brand-100 transition">
+                        <i class="fa-solid fa-volume-high"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+        renderVocabulary(vocabularyData);
+
+        function filterVocabulary() {
+            const query = document.getElementById('vocab-search-input').value.toLowerCase();
+            const filtered = vocabularyData.filter(v => v.molsom.toLowerCase().includes(query) || v.meaning.toLowerCase().includes(query) || v.category.toLowerCase().includes(query));
+            renderVocabulary(filtered);
+        }
+
+        // Flashcards Modal & Navigation
+        let currentFlashcardIndex = 0;
+        function openFlashcardModal() {
+            currentFlashcardIndex = 0;
+            updateFlashcardView();
+            document.getElementById('flashcard-modal').classList.remove('hidden');
+        }
+        function closeFlashcardModal() {
+            document.getElementById('flashcard-modal').classList.add('hidden');
+        }
+        function updateFlashcardView() {
+            const card = vocabularyData[currentFlashcardIndex];
+            document.getElementById('fc-front-text').innerText = card.molsom;
+            document.getElementById('fc-back-text').innerText = card.meaning;
+            document.getElementById('flashcard-counter').innerText = `Card ${currentFlashcardIndex + 1} of ${vocabularyData.length}`;
+            document.getElementById('flashcard-inner').classList.remove('flipped');
+        }
+        function flipFlashcard() {
+            document.getElementById('flashcard-inner').classList.toggle('flipped');
+        }
+        function nextFlashcard() {
+            currentFlashcardIndex = (currentFlashcardIndex + 1) % vocabularyData.length;
+            updateFlashcardView();
+        }
+        function prevFlashcard() {
+            currentFlashcardIndex = (currentFlashcardIndex - 1 + vocabularyData.length) % vocabularyData.length;
+            updateFlashcardView();
+        }
+
+        // Install PWA Modal
+        function openInstallModal() {
+            document.getElementById('install-modal').classList.remove('hidden');
+        }
+        function closeInstallModal() {
+            document.getElementById('install-modal').classList.add('hidden');
+        }
+
+        // Certificate Modal
+        function previewCertificate() {
+            document.getElementById('certificate-modal').classList.remove('hidden');
+        }
+        function closeCertificateModal() {
+            document.getElementById('certificate-modal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
